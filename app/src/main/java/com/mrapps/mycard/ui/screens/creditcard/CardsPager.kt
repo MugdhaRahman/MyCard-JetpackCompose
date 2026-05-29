@@ -83,7 +83,7 @@ fun CardCollapsingPagerScreen(onColorChange: (Color) -> Unit = {}) {
             backDrawable = R.drawable.mask_visa_back,
             accentColor = Blue200
         ), CardData(
-            title = "Rainbow",
+            title = "Mix Color",
             subtitle = "Rare by design, yours by choice.",
             frontDrawable = R.drawable.mask_visa_front,
             backDrawable = R.drawable.mask_visa_back,
@@ -128,14 +128,14 @@ fun CardCollapsingPagerScreen(onColorChange: (Color) -> Unit = {}) {
                 ) { page ->
                     Text(
                         text = cards[page].title,
-                        style = MaterialTheme.typography.headlineMedium.copy(
+                        style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold, color = Color.White
                         ),
                         textAlign = TextAlign.Center
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(5.dp))
 
                 AnimatedContent(
                     targetState = currentPage, transitionSpec = {
@@ -144,7 +144,7 @@ fun CardCollapsingPagerScreen(onColorChange: (Color) -> Unit = {}) {
                 ) { page ->
                     Text(
                         text = cards[page].subtitle,
-                        style = MaterialTheme.typography.bodyLarge.copy(
+                        style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color.White.copy(alpha = 0.7f), textAlign = TextAlign.Center
                         ),
                         textAlign = TextAlign.Center
@@ -192,16 +192,17 @@ fun CardCollapsingPagerScreen(onColorChange: (Color) -> Unit = {}) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 20.dp),
+                .padding(top = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
                 text = "Touch to explore",
                 color = TransparentWhite600,
+                style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 14.dp)
+                    .padding(bottom = 8.dp)
                     .animateContentSize(),
                 textAlign = TextAlign.Center
             )
@@ -237,7 +238,7 @@ fun CardCollapsingPagerScreen(onColorChange: (Color) -> Unit = {}) {
                         if (isSelected) {
                             Box(
                                 modifier = Modifier
-                                    .size(46.dp)
+                                    .size(42.dp)
                                     .border(
                                         width = 2.dp, color = Green300, shape = CircleShape
                                     )
@@ -245,7 +246,7 @@ fun CardCollapsingPagerScreen(onColorChange: (Color) -> Unit = {}) {
                         }
 
                         Box(
-                            modifier = Modifier.size(38.dp).align(Alignment.Center)
+                            modifier = Modifier.size(35.dp).align(Alignment.Center)
                                 .clip(CircleShape).background(White800).run {
                                     if (card.isChromatic) background(
                                         brush = Brush.linearGradient(
@@ -263,7 +264,7 @@ fun CardCollapsingPagerScreen(onColorChange: (Color) -> Unit = {}) {
 }
 
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun CardCollapsingPagerScreenPreview() {
     MyCardTheme {

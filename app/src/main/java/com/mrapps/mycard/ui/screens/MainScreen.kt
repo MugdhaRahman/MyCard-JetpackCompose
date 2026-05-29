@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
@@ -119,7 +121,7 @@ fun GlassyBottomNav(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 0.dp, end = 32.dp, bottom = 20.dp, start = 32.dp )
-            .height(72.dp)
+            .height(68.dp)
     ) {
         // Glass Background
         Box(
@@ -152,7 +154,7 @@ fun GlassyBottomNav(
             // Add Button (Center)
             Box(
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(48    .dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary)
                     .clickable { onAddClick() },
@@ -167,7 +169,7 @@ fun GlassyBottomNav(
 
             // Settings
             GlassNavItem(
-                icon = Icons.Default.Settings,
+                icon = Icons.Default.AccountCircle,
                 label = "Settings",
                 selected = currentRoute == "settings",
                 onClick = { onNavigate("settings") }
