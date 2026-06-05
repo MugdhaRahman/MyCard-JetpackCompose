@@ -1,7 +1,6 @@
 package com.mrapps.mycard.ui.screens.creditcard
 
 import android.annotation.SuppressLint
-import com.mrapps.mycard.R
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
@@ -11,93 +10,78 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.mrapps.mycard.ui.screens.HomeScreen
-import com.mrapps.mycard.ui.theme.Black700
-import com.mrapps.mycard.ui.theme.Black900
-import com.mrapps.mycard.ui.theme.Blue200
+import com.mrapps.mycard.R
 import com.mrapps.mycard.ui.theme.Green300
-import com.mrapps.mycard.ui.theme.Magenta100
-import com.mrapps.mycard.ui.theme.MyCardTheme
-import com.mrapps.mycard.ui.theme.TransparentGray100
-import com.mrapps.mycard.ui.theme.TransparentWhite200
 import com.mrapps.mycard.ui.theme.TransparentWhite600
 import com.mrapps.mycard.ui.theme.White800
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 data class CardData(
-    val title: String,
-    val subtitle: String,
-    val frontDrawable: Int,
-    val backDrawable: Int,
+    val id: Int = 0,
+    val title: String = "",
+    val subtitle: String = "Double tap to flip card",
+    val cardNumber: String = "",
+    val cardProvider: String = "",
+    val cardOwnerName: String = "",
+    val expireDate: String = "",
+    val cvc: String = "",
+    val frontDrawable: Int = R.drawable.mask_visa_front,
+    val backDrawable: Int = R.drawable.mask_visa_back,
     val accentColor: Color,
     val isChromatic: Boolean = false
 )
 
 @SuppressLint("ConfigurationScreenWidthHeight", "FrequentlyChangingValue")
 @Composable
-fun CardCollapsingPagerScreen(onColorChange: (Color) -> Unit = {}) {
-    val cards = listOf(
-        CardData(
-            title = "Pure White",
-            subtitle = "Clean. Minimal. All you need.",
-            frontDrawable = R.drawable.mask_visa_front,
-            backDrawable = R.drawable.mask_visa_back,
-            accentColor = White800
-        ), CardData(
-            title = "Ocean Blue",
-            subtitle = "Fresh energy in every transaction.",
-            frontDrawable = R.drawable.mask_visa_front,
-            backDrawable = R.drawable.mask_visa_back,
-            accentColor = Blue200
-        ), CardData(
-            title = "Mix Color",
-            subtitle = "Rare by design, yours by choice.",
-            frontDrawable = R.drawable.mask_visa_front,
-            backDrawable = R.drawable.mask_visa_back,
-            accentColor = Magenta100.copy(alpha = 0.12f),
-            isChromatic = true
-        )
-    )
-
+fun CardCollapsingPagerScreen(
+    cards: List<CardData>,
+    onColorChange: (Color) -> Unit = {}
+) {
     val pagerState = rememberPagerState(pageCount = { cards.size }, initialPage = 0)
     val currentPage = pagerState.settledPage
     val coroutineScope = rememberCoroutineScope()
 
     val animatedAccentColor by animateColorAsState(
-        targetValue = cards[pagerState.currentPage].accentColor,
+        targetValue = if (cards.isNotEmpty()) cards[pagerState.currentPage].accentColor else White800,
         animationSpec = tween(durationMillis = 600),
         label = "accentColor"
     )
@@ -111,6 +95,8 @@ fun CardCollapsingPagerScreen(onColorChange: (Color) -> Unit = {}) {
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
     ) {
+        if (cards.isEmpty()) return@Column
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -127,7 +113,7 @@ fun CardCollapsingPagerScreen(onColorChange: (Color) -> Unit = {}) {
                     }, label = "Card Title Animation"
                 ) { page ->
                     Text(
-                        text = cards[page].title,
+                        text = if (page < cards.size) cards[page].cardProvider else "",
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold, color = Color.White
                         ),
@@ -143,7 +129,7 @@ fun CardCollapsingPagerScreen(onColorChange: (Color) -> Unit = {}) {
                     }, label = "Card Subtitle Animation"
                 ) { page ->
                     Text(
-                        text = cards[page].subtitle,
+                        text = if (page < cards.size) cards[page].subtitle else "",
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color.White.copy(alpha = 0.7f), textAlign = TextAlign.Center
                         ),
@@ -178,12 +164,18 @@ fun CardCollapsingPagerScreen(onColorChange: (Color) -> Unit = {}) {
                         .scale(scale.value),
                     contentAlignment = Alignment.Center
                 ) {
+                    val card = cards[page]
                     InspectableCard(
                         modifier = Modifier.fillMaxHeight(),
-                        cardFrontDrawable = cards[page].frontDrawable,
-                        cardBackDrawable = cards[page].backDrawable,
-                        accentColor = cards[page].accentColor,
-                        isChromatic = cards[page].isChromatic
+                        cardNumber = card.cardNumber,
+                        cardProvider = card.cardProvider,
+                        cardOwnerName = card.cardOwnerName,
+                        expireDate = card.expireDate,
+                        cvc = card.cvc,
+                        cardFrontDrawable = card.frontDrawable,
+                        cardBackDrawable = card.backDrawable,
+                        accentColor = card.accentColor,
+                        isChromatic = card.isChromatic
                     )
                 }
             }
@@ -260,14 +252,5 @@ fun CardCollapsingPagerScreen(onColorChange: (Color) -> Unit = {}) {
             }
         }
 
-    }
-}
-
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun CardCollapsingPagerScreenPreview() {
-    MyCardTheme {
-        CardCollapsingPagerScreen()
     }
 }

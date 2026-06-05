@@ -9,14 +9,30 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -34,13 +50,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mrapps.mycard.ui.theme.Cyan100
 import com.mrapps.mycard.ui.theme.Magenta100
 import com.mrapps.mycard.ui.theme.Pink100
 import com.mrapps.mycard.ui.theme.Yellow100
+import androidx.compose.ui.tooling.preview.Preview
+import com.mrapps.mycard.ui.theme.MyCardTheme
+import com.mrapps.mycard.ui.theme.White800
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -63,12 +86,18 @@ fun InspectableCard(
     modifier: Modifier = Modifier,
     @DrawableRes cardFrontDrawable: Int = R.drawable.mask_visa_front,
     @DrawableRes cardBackDrawable: Int = R.drawable.mask_visa_back,
+    cardNumber: String = "",
+    cardProvider: String = "",
+    cardOwnerName: String = "",
+    expireDate: String = "",
+    cvc: String = "",
     accentColor: Color,
-    isChromatic: Boolean = false
+    isChromatic: Boolean = false,
+    initialIsFlipped: Boolean = false
 ) {
     val localDensity = LocalDensity.current
 
-    var isFlipped by rememberSaveable { mutableStateOf(false) }
+    var isFlipped by rememberSaveable { mutableStateOf(initialIsFlipped) }
     var rotationX by remember { mutableFloatStateOf(0f) }
     var rotationY by remember { mutableFloatStateOf(0f) }
 
@@ -169,6 +198,12 @@ fun InspectableCard(
                     else this
                 },
                 cardDrawable = if (flipRotation <= 90f) cardFrontDrawable else cardBackDrawable,
+                cardNumber = cardNumber,
+                cardProvider = cardProvider,
+                cardOwnerName = cardOwnerName,
+                expireDate = expireDate,
+                cvc = cvc,
+                isFlipped = flipRotation > 90f,
                 background = accentColor,
                 isChromatic = isChromatic,
                 touchX = animatedTouchX,
@@ -179,9 +214,31 @@ fun InspectableCard(
 }
 
 @Composable
+fun CopyButton(text: String, modifier: Modifier = Modifier) {
+    val clipboardManager = LocalClipboardManager.current
+    IconButton(
+        onClick = { clipboardManager.setText(AnnotatedString(text)) },
+        modifier = modifier.size(32.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.ContentCopy,
+            contentDescription = "Copy",
+            modifier = Modifier.size(16.dp),
+            tint = Color.Black.copy(alpha = 0.6f)
+        )
+    }
+}
+
+@Composable
 fun CardFace(
     modifier: Modifier = Modifier,
     @DrawableRes cardDrawable: Int,
+    cardNumber: String = "",
+    cardProvider: String = "",
+    cardOwnerName: String = "",
+    expireDate: String = "",
+    cvc: String = "",
+    isFlipped: Boolean = false,
     background: Color = Color.White,
     isChromatic: Boolean = false,
     touchX: Float = 0.5f,
@@ -197,6 +254,132 @@ fun CardFace(
                 modifier = Modifier.aspectRatio(0.66f),
                 contentDescription = ""
             )
+        }
+
+        if (isFlipped) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clip(shape = RoundedCornerShape(size = 20.dp))
+                    .padding(24.dp),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                        .padding(horizontal = 30.dp, vertical = 15.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "CVC",
+                        color = Color.Black,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = cvc,
+                            color = Color.Black,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        CopyButton(cvc)
+                    }
+                }
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clip(shape = RoundedCornerShape(size = 20.dp))
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        if (cardProvider.isNotEmpty()) {
+                            Text(
+                                text = cardProvider,
+                                color = Color.Black,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(bottom = 20.dp),
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    modifier = Modifier.padding(bottom = 5.dp),
+                                    text = cardNumber,
+                                    color = Color.Black,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 2.sp
+                                )
+                                CopyButton(cardNumber)
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.Start,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        modifier = Modifier.padding(end = 16.dp),
+                                        text = "VALID THRU",
+                                        color = Color.Black.copy(alpha = 0.6f),
+                                        style = MaterialTheme.typography.labelSmall,
+                                    )
+
+                                    Text(
+                                        text = expireDate,
+                                        color = Color.Black,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                }
+                                CopyButton(expireDate)
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 20.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = cardOwnerName,
+                                    color = Color.Black,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                                CopyButton(cardOwnerName)
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // Chromatic overlay
@@ -231,6 +414,74 @@ fun CardFace(
                     brush = gradientBrush2, size = size, blendMode = BlendMode.Multiply
                 )
             }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InspectableCardPreview() {
+    MyCardTheme {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            InspectableCard(
+                cardNumber = "1234 5678 9012 3456",
+                cardProvider = "BANK",
+                cardOwnerName = "John Doe",
+                expireDate = "12/28",
+                cvc = "123",
+                accentColor = White800
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InspectableCardChromaticPreview() {
+    MyCardTheme {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            InspectableCard(
+                cardNumber = "4567 8901 2345 6789",
+                cardProvider = "Visa",
+                cardOwnerName = "Alex Johnson",
+                expireDate = "03/29",
+                cvc = "789",
+                accentColor = Magenta100.copy(alpha = 0.12f),
+                isChromatic = true,
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InspectableCardFlippedPreview() {
+    MyCardTheme {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            InspectableCard(
+                cardNumber = "1234 5678 9012 3456",
+                cardProvider = "Visa",
+                cardOwnerName = "John Doe",
+                expireDate = "12/28",
+                cvc = "123",
+                accentColor = White800,
+                initialIsFlipped = true
+            )
         }
     }
 }

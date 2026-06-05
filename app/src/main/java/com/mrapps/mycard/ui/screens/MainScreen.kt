@@ -1,46 +1,85 @@
 package com.mrapps.mycard.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.mrapps.mycard.ui.screens.creditcard.CardCollapsingPagerScreen
+import androidx.navigation.toRoute
+import com.mrapps.mycard.navigation.NavRoute
+import com.mrapps.mycard.ui.screens.creditcard.CardViewModel
+import com.mrapps.mycard.ui.screens.creditcard.CreateCardScreen
 import com.mrapps.mycard.ui.theme.Black700
 import com.mrapps.mycard.ui.theme.Black900
-import com.mrapps.mycard.ui.theme.MyCardTheme
 import com.mrapps.mycard.ui.theme.White800
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(modifier: Modifier = Modifier) {
+fun MainScreen(
+
+    modifier: Modifier = Modifier,
+    viewModel: CardViewModel = koinViewModel()
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
+    val currentDestination = navBackStackEntry?.destination
 
+    val cards by viewModel.cards.collectAsStateWithLifecycle()
     var currentAccentColor by remember { mutableStateOf(White800) }
+
+    LaunchedEffect(cards) {
+        if (cards.isNotEmpty() && currentDestination?.hasRoute<NavRoute.Home>() == true) {
+            currentAccentColor = cards.first().accentColor
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -61,51 +100,76 @@ fun MainScreen(modifier: Modifier = Modifier) {
             modifier = modifier,
             containerColor = Color.Transparent,
             topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("MyCard") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                actions = {
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                CenterAlignedTopAppBar(
+                    title = { Text("MyCard") },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                        titleContentColor = MaterialTheme.colorScheme.primary,
+                        actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    actions = {
+                        IconButton(onClick = {
+                            navController.navigate(NavRoute.Settings) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }) {
+                            Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        }
                     }
-                }
-            )
-        },
-        bottomBar = {
-            GlassyBottomNav(
-                currentRoute = currentRoute,
-                onNavigate = { route ->
-                    if (currentRoute != route) {
+                )
+            },
+            bottomBar = {
+                GlassyBottomNav(
+                    currentDestination = currentDestination,
+                    onNavigate = { route ->
                         navController.navigate(route) {
-                            popUpTo(navController.graph.startDestinationId) {
+                            popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
                             }
                             launchSingleTop = true
                             restoreState = true
                         }
+                    },
+                    onAddClick = {
+                        navController.navigate(NavRoute.CreateCard())
                     }
-                },
-                onAddClick = { /* TODO */ }
-            )
-        }
+                )
+            }
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = "home",
+                startDestination = NavRoute.Home,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                composable("home") {
-                    CardCollapsingPagerScreen(
+                composable<NavRoute.Home> {
+                    HomeScreen(
+                        viewModel = viewModel,
                         onColorChange = { currentAccentColor = it }
                     )
                 }
-                composable("settings") { SettingsScreen() }
+                composable<NavRoute.CreateCard> { backStackEntry ->
+                    val route: NavRoute.CreateCard = backStackEntry.toRoute()
+                    CreateCardScreen(
+                        viewModel = viewModel,
+                        cardId = route.cardId,
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+                composable<NavRoute.Account> { AccountScreen() }
+                composable<NavRoute.Settings> {
+                    SettingsScreen(
+                        viewModel = viewModel,
+                        onEditCard = { cardId ->
+                            navController.navigate(NavRoute.CreateCard(cardId))
+                        }
+                    )
+                }
             }
         }
     }
@@ -113,17 +177,16 @@ fun MainScreen(modifier: Modifier = Modifier) {
 
 @Composable
 fun GlassyBottomNav(
-    currentRoute: String?,
-    onNavigate: (String) -> Unit,
+    currentDestination: androidx.navigation.NavDestination?,
+    onNavigate: (NavRoute) -> Unit,
     onAddClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 0.dp, end = 32.dp, bottom = 20.dp, start = 32.dp )
+            .padding(top = 0.dp, end = 32.dp, bottom = 20.dp, start = 32.dp)
             .height(68.dp)
     ) {
-        // Glass Background
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -131,12 +194,12 @@ fun GlassyBottomNav(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f),
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
                         )
                     )
                 )
-                .blur(15.dp)
+                .blur(4.dp)
         )
 
         Row(
@@ -144,35 +207,41 @@ fun GlassyBottomNav(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            // Home
             GlassNavItem(
                 icon = Icons.Default.Home,
                 label = "Home",
-                selected = currentRoute == "home",
-                onClick = { onNavigate("home") }
+                selected = currentDestination?.hierarchy?.any { it.hasRoute<NavRoute.Home>() } == true,
+                onClick = { onNavigate(NavRoute.Home) }
             )
-            // Add Button (Center)
+
             Box(
                 modifier = Modifier
-                    .size(48    .dp)
+                    .size(48.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary)
+                    .border(
+                        BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outline.copy(alpha = 0.8f)
+                        ), CircleShape
+                    )
+                    .shadow(1.dp)
+
+
                     .clickable { onAddClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add",
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
-
-            // Settings
             GlassNavItem(
                 icon = Icons.Default.AccountCircle,
-                label = "Settings",
-                selected = currentRoute == "settings",
-                onClick = { onNavigate("settings") }
+                label = "Account",
+                selected = currentDestination?.hierarchy?.any { it.hasRoute<NavRoute.Account>() } == true,
+                onClick = { onNavigate(NavRoute.Account) }
             )
         }
     }
@@ -190,16 +259,10 @@ fun GlassNavItem(
             Icon(
                 imageVector = icon,
                 contentDescription = label,
-                tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                tint = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface.copy(
+                    alpha = 0.4f
+                )
             )
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun MainScreenPreview() {
-    MyCardTheme {
-        MainScreen()
     }
 }
