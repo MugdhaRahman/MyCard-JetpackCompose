@@ -94,7 +94,11 @@ fun CardItem(
                     Icon(Icons.Default.Edit, contentDescription = "Edit Card")
                 }
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete Card", tint = MaterialTheme.colorScheme.error)
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete Card",
+                        tint = MaterialTheme.colorScheme.error
+                    )
                 }
             }
         }
