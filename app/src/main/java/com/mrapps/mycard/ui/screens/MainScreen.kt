@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -64,7 +65,6 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-
     modifier: Modifier = Modifier,
     viewModel: CardViewModel = koinViewModel()
 ) {
@@ -80,6 +80,19 @@ fun MainScreen(
             currentAccentColor = cards.first().accentColor
         }
     }
+
+    val title = when {
+        currentDestination?.hasRoute<NavRoute.Home>() == true -> "MyCard"
+        currentDestination?.hasRoute<NavRoute.Account>() == true -> "Account"
+        currentDestination?.hasRoute<NavRoute.Settings>() == true -> "Settings"
+        currentDestination?.hasRoute<NavRoute.CreateCard>() == true -> {
+            val route = navBackStackEntry?.toRoute<NavRoute.CreateCard>()
+            if (route?.cardId == null) "Add New Card" else "Edit Card"
+        }
+        else -> "MyCard"
+    }
+
+    val showBackButton = currentDestination?.hasRoute<NavRoute.Home>() == false
 
     Box(
         modifier = Modifier
@@ -101,23 +114,33 @@ fun MainScreen(
             containerColor = Color.Transparent,
             topBar = {
                 CenterAlignedTopAppBar(
-                    title = { Text("MyCard") },
+                    title = { Text(title) },
+                    navigationIcon = {
+                        if (showBackButton) {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                            }
+                        }
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
-                        titleContentColor = MaterialTheme.colorScheme.primary,
-                        actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                        containerColor = Color.Transparent,
+                        titleContentColor = Color.White,
+                        navigationIconContentColor = Color.White,
+                        actionIconContentColor = Color.White
                     ),
                     actions = {
-                        IconButton(onClick = {
-                            navController.navigate(NavRoute.Settings) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                        if (currentDestination?.hasRoute<NavRoute.Home>() == true) {
+                            IconButton(onClick = {
+                                navController.navigate(NavRoute.Settings) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
+                            }) {
+                                Icon(Icons.Default.Settings, contentDescription = "Settings")
                             }
-                        }) {
-                            Icon(Icons.Default.Settings, contentDescription = "Settings")
                         }
                     }
                 )

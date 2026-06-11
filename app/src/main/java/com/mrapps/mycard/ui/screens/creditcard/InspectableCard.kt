@@ -1,7 +1,7 @@
 package com.mrapps.mycard.ui.screens.creditcard
 
+import android.content.ClipData
 import androidx.annotation.DrawableRes
-import com.mrapps.mycard.R
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -16,13 +16,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -38,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -50,20 +49,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mrapps.mycard.R
 import com.mrapps.mycard.ui.theme.Cyan100
 import com.mrapps.mycard.ui.theme.Magenta100
-import com.mrapps.mycard.ui.theme.Pink100
-import com.mrapps.mycard.ui.theme.Yellow100
-import androidx.compose.ui.tooling.preview.Preview
 import com.mrapps.mycard.ui.theme.MyCardTheme
+import com.mrapps.mycard.ui.theme.Pink100
 import com.mrapps.mycard.ui.theme.White800
+import com.mrapps.mycard.ui.theme.Yellow100
+import kotlinx.coroutines.launch
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -215,9 +216,14 @@ fun InspectableCard(
 
 @Composable
 fun CopyButton(text: String, modifier: Modifier = Modifier) {
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
+    val scope = rememberCoroutineScope()
     IconButton(
-        onClick = { clipboardManager.setText(AnnotatedString(text)) },
+        onClick = {
+            scope.launch {
+                clipboard.setClipEntry(ClipEntry(ClipData.newPlainText(null, text)))
+            }
+        },
         modifier = modifier.size(32.dp)
     ) {
         Icon(
@@ -315,7 +321,8 @@ fun CardFace(
                     }
 
                     Column(
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
                             .padding(bottom = 20.dp),
                     ) {
                         Column {
@@ -328,7 +335,7 @@ fun CardFace(
                                     modifier = Modifier.padding(bottom = 5.dp),
                                     text = cardNumber,
                                     color = Color.Black,
-                                    style = MaterialTheme.typography.titleLarge,
+                                    style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 2.sp
                                 )
@@ -354,7 +361,7 @@ fun CardFace(
                                     Text(
                                         text = expireDate,
                                         color = Color.Black,
-                                        style = MaterialTheme.typography.bodyMedium,
+                                        style = MaterialTheme.typography.bodySmall,
                                         fontWeight = FontWeight.Bold,
                                     )
                                 }
