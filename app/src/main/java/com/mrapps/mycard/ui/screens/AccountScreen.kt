@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -18,6 +19,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -56,15 +59,30 @@ fun AccountScreen(
             }
         }
 
-        FloatingActionButton(
-            onClick = { showAddDialog = true },
+        // Custom Gradient FAB
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(24.dp),
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
+                .padding(24.dp)
+                .size(56.dp)
+                .shadow(elevation = 6.dp, shape = CircleShape)
+                .clip(CircleShape)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                        )
+                    )
+                )
+                .clickable { showAddDialog = true },
+            contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Add Account")
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add Account",
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
         }
 
         if (showAddDialog) {
@@ -131,7 +149,7 @@ fun AccountItem(
                 }
             }
             IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red.copy(alpha = 0.6f))
+                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
             }
         }
     }
@@ -192,6 +210,15 @@ fun AddAccountDialog(
     var providerNameError by remember { mutableStateOf(false) }
     var accountHolderNameError by remember { mutableStateOf(false) }
 
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = MaterialTheme.colorScheme.outline,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+        focusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        focusedLabelColor = MaterialTheme.colorScheme.outline,
+        unfocusedLabelColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+    )
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(24.dp),
@@ -220,12 +247,17 @@ fun AddAccountDialog(
                     Tab(
                         selected = type == AccountType.MOBILE_BANKING,
                         onClick = { type = AccountType.MOBILE_BANKING },
-                        text = { Text("Mobile Banking") }
+                        text = { Text(
+                            text = "Mobile Banking",
+                            color =  if (type == AccountType.MOBILE_BANKING) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                        ) }
                     )
                     Tab(
                         selected = type == AccountType.BANK,
                         onClick = { type = AccountType.BANK },
-                        text = { Text("Bank") }
+                        text = { Text(
+                            text = "Bank",
+                            color =  if (type == AccountType.BANK) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant) }
                     )
                 }
 
@@ -238,7 +270,8 @@ fun AddAccountDialog(
                     label = { Text("Provider Name (e.g. bKash, Dutch Bangla)") },
                     modifier = Modifier.fillMaxWidth(),
                     isError = providerNameError,
-                    supportingText = if (providerNameError) { { Text("Required") } } else null
+                    supportingText = if (providerNameError) { { Text("Required") } } else null,
+                    colors = textFieldColors
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -252,7 +285,8 @@ fun AddAccountDialog(
                     label = { Text("Account Holder Name") },
                     modifier = Modifier.fillMaxWidth(),
                     isError = accountHolderNameError,
-                    supportingText = if (accountHolderNameError) { { Text("Required") } } else null
+                    supportingText = if (accountHolderNameError) { { Text("Required") } } else null,
+                    colors = textFieldColors
                 )
 
                 if (type == AccountType.MOBILE_BANKING) {
@@ -261,14 +295,16 @@ fun AddAccountDialog(
                         value = phoneNumberOrEmail,
                         onValueChange = { phoneNumberOrEmail = it },
                         label = { Text("Phone Number or Email") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = textFieldColors
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
                         value = username,
                         onValueChange = { username = it },
                         label = { Text("Username (Optional)") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = textFieldColors
                     )
                 } else {
                     Spacer(modifier = Modifier.height(12.dp))
@@ -276,28 +312,32 @@ fun AddAccountDialog(
                         value = accountNumber,
                         onValueChange = { accountNumber = it },
                         label = { Text("Account Number") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = textFieldColors
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
                         value = routingNumber,
                         onValueChange = { routingNumber = it },
                         label = { Text("Routing Number") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = textFieldColors
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
                         value = branchName,
                         onValueChange = { branchName = it },
                         label = { Text("Branch Name") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = textFieldColors
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
                         value = otherInfo,
                         onValueChange = { otherInfo = it },
                         label = { Text("Other Info (Optional)") },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = textFieldColors
                     )
                 }
 

@@ -39,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -278,45 +279,62 @@ fun CreateCardScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Button(
-            onClick = {
-                cardNumberError = cardNumber.isEmpty()
-                expireDateError = expireDate.isEmpty()
-                cvcError = cvc.isEmpty()
-                cardOwnerNameError = cardOwnerName.isEmpty()
-
-                if (cardNumberError || expireDateError || cvcError || cardOwnerNameError) {
-                    return@Button
-                }
-
-                val card = CardData(
-                    id = cardId ?: 0,
-                    cardNumber = cardNumber,
-                    cardProvider = cardProvider,
-                    cardOwnerName = cardOwnerName,
-                    expireDate = expireDate,
-                    cvc = cvc,
-                    accentColor = selectedColor,
-                    isChromatic = isChromatic,
-                    title = cardProvider.ifEmpty { "My Card" }
-                )
-                if (cardId == null) {
-                    viewModel.addCard(card)
-                } else {
-                    viewModel.updateCard(card)
-                }
-                onNavigateBack()
-            },
+        // Glassy Gradient Save Button
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            )
+                .height(52.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .padding(horizontal = 40.dp)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                        )
+                    )
+                )
+                .border(
+                    1.dp,
+                    Color.White.copy(alpha = 0.2f),
+                    RoundedCornerShape(12.dp)
+                )
+                .clickable {
+                    cardNumberError = cardNumber.isEmpty()
+                    expireDateError = expireDate.isEmpty()
+                    cvcError = cvc.isEmpty()
+                    cardOwnerNameError = cardOwnerName.isEmpty()
+
+                    if (cardNumberError || expireDateError || cvcError || cardOwnerNameError) {
+                        return@clickable
+                    }
+
+                    val card = CardData(
+                        id = cardId ?: 0,
+                        cardNumber = cardNumber,
+                        cardProvider = cardProvider,
+                        cardOwnerName = cardOwnerName,
+                        expireDate = expireDate,
+                        cvc = cvc,
+                        accentColor = selectedColor,
+                        isChromatic = isChromatic,
+                        title = cardProvider.ifEmpty { "My Card" }
+                    )
+                    if (cardId == null) {
+                        viewModel.addCard(card)
+                    } else {
+                        viewModel.updateCard(card)
+                    }
+                    onNavigateBack()
+                },
+            contentAlignment = Alignment.Center
         ) {
-            Text("Save Card", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(
+                "Save Card",
+                color = Color.White,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
         Spacer(modifier = Modifier.height(40.dp))
     }
@@ -421,7 +439,6 @@ fun MonthYearPickerDialog(
                 ) {
                     TextButton(onClick = onDismiss) {
                         Text(
-
                             text ="Cancel",
                             color = MaterialTheme.colorScheme.error
                         )
