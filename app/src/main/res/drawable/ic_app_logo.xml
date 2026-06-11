@@ -1,0 +1,69 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1024dp"
+    android:height="1024dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+    
+    <!-- Background Shadow/Glow -->
+    <path
+        android:pathData="M512,512m-448,0a448,448 0,1 1,896 0a448,448 0,1 1,-896 0">
+        <gradient 
+            android:type="radial"
+            android:centerX="512"
+            android:centerY="512"
+            android:gradientRadius="448">
+            <item android:offset="0" android:color="#33FFFFFF"/>
+            <item android:offset="1" android:color="#00000000"/>
+        </gradient>
+    </path>
+
+    <!-- Main Card Body -->
+    <path
+        android:pathData="M256,384 L768,384 Q800,384 800,416 L800,608 Q800,640 768,640 L256,640 Q224,640 224,608 L224,416 Q224,384 256,384 Z"
+        android:fillColor="#1A1A1A"
+        android:strokeWidth="2"
+        android:strokeColor="#40FFFFFF"/>
+
+    <!-- Gloss Effect Overlay -->
+    <path
+        android:pathData="M256,384 L768,384 Q800,384 800,416 L800,480 L224,560 L224,416 Q224,384 256,384 Z">
+        <gradient 
+            android:type="linear"
+            android:startX="512"
+            android:startY="384"
+            android:endX="512"
+            android:endY="560">
+            <item android:offset="0" android:color="#1AFFFFFF"/>
+            <item android:offset="1" android:color="#00FFFFFF"/>
+        </gradient>
+    </path>
+
+    <!-- Chip Detail -->
+    <path
+        android:pathData="M280,440 L340,440 Q350,440 350,450 L350,490 Q350,500 340,500 L280,500 Q270,500 270,490 L270,450 Q270,440 280,440 Z"
+        android:fillColor="#FFD700">
+        <gradient 
+            android:type="linear"
+            android:startX="270"
+            android:startY="440"
+            android:endX="350"
+            android:endY="500">
+            <item android:offset="0" android:color="#FFD700"/>
+            <item android:offset="1" android:color="#B8860B"/>
+        </gradient>
+    </path>
+
+    <!-- Bottom Detail Lines -->
+    <path
+        android:pathData="M650,580 L750,580"
+        android:strokeWidth="8"
+        android:strokeColor="#33FFFFFF"
+        android:strokeLineCap="round"/>
+    <path
+        android:pathData="M680,600 L750,600"
+        android:strokeWidth="8"
+        android:strokeColor="#33FFFFFF"
+        android:strokeLineCap="round"/>
+
+</vector>
