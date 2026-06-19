@@ -1,23 +1,14 @@
 package com.mrapps.mycard.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
@@ -37,13 +28,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -54,10 +41,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.mrapps.mycard.navigation.NavRoute
+import com.mrapps.mycard.ui.components.GlassFab
+import com.mrapps.mycard.ui.components.GlassNavItem
+import com.mrapps.mycard.ui.components.LiquidGlassNavBar
 import com.mrapps.mycard.ui.screens.creditcard.CardViewModel
 import com.mrapps.mycard.ui.screens.creditcard.CreateCardScreen
 import com.mrapps.mycard.ui.theme.Black700
+import com.mrapps.mycard.ui.theme.LiquidGlassContainer
 import com.mrapps.mycard.ui.theme.Black900
 import com.mrapps.mycard.ui.theme.White800
 import org.koin.compose.viewmodel.koinViewModel
@@ -71,6 +64,9 @@ fun MainScreen(
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+
+    val backgroundBackdrop = rememberLayerBackdrop()
+    val contentBackdrop = rememberLayerBackdrop()
 
     val cards by viewModel.cards.collectAsStateWithLifecycle()
     var currentAccentColor by remember { mutableStateOf(White800) }
@@ -93,22 +89,29 @@ fun MainScreen(
     }
 
     val showBackButton = currentDestination?.hasRoute<NavRoute.Home>() == false
+    val isGlassBack = currentDestination?.hasRoute<NavRoute.Settings>() == true ||
+            currentDestination?.hasRoute<NavRoute.CreateCard>() == true
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        currentAccentColor.copy(alpha = 0.4f),
-                        Black700,
-                        Black900,
-                    ),
-                    center = Offset.Zero,
-                    radius = 2400f
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Separate Background Layer (Captured independently)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            currentAccentColor.copy(alpha = 0.4f),
+                            Black700,
+                            Black900,
+                        ),
+                        center = Offset.Zero,
+                        radius = 2400f
+                    )
                 )
-            )
-    ) {
+                .layerBackdrop(backgroundBackdrop)
+        )
+
+        // UI Layer (Not inside the background layer's hierarchy)
         Scaffold(
             modifier = modifier,
             containerColor = Color.Transparent,
@@ -118,7 +121,25 @@ fun MainScreen(
                     navigationIcon = {
                         if (showBackButton) {
                             IconButton(onClick = { navController.popBackStack() }) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                                if (isGlassBack) {
+                                    LiquidGlassContainer(
+                                        shape = CircleShape,
+                                        blurRadius = 10.dp,
+                                        modifier = Modifier.size(40.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.ArrowBack,
+                                            contentDescription = "Back",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                } else {
+                                    Icon(
+                                        Icons.Default.ArrowBack,
+                                        contentDescription = "Back"
+                                    )
+                                }
                             }
                         }
                     },
@@ -139,15 +160,27 @@ fun MainScreen(
                                     restoreState = true
                                 }
                             }) {
-                                Icon(Icons.Default.Settings, contentDescription = "Settings")
+                                LiquidGlassContainer(
+                                    shape = CircleShape,
+                                    blurRadius = 10.dp,
+                                    modifier = Modifier.size(40.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Settings,
+                                        contentDescription = "Settings",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
                             }
                         }
                     }
                 )
             },
             bottomBar = {
-                GlassyBottomNav(
+                AdaptiveNavBar(
                     currentDestination = currentDestination,
+                    backdrop = contentBackdrop,
                     onNavigate = { route ->
                         navController.navigate(route) {
                             popUpTo(navController.graph.findStartDestination().id) {
@@ -168,6 +201,7 @@ fun MainScreen(
                 startDestination = NavRoute.Home,
                 modifier = Modifier
                     .fillMaxSize()
+                    .layerBackdrop(contentBackdrop)
                     .padding(innerPadding)
             ) {
                 composable<NavRoute.Home> {
@@ -181,16 +215,18 @@ fun MainScreen(
                     CreateCardScreen(
                         viewModel = viewModel,
                         cardId = route.cardId,
-                        onNavigateBack = { navController.popBackStack() }
+                        onNavigateBack = { navController.popBackStack() },
+                        backdrop = backgroundBackdrop
                     )
                 }
-                composable<NavRoute.Account> { AccountScreen() }
+                composable<NavRoute.Account> { AccountScreen(backdrop = backgroundBackdrop) }
                 composable<NavRoute.Settings> {
                     SettingsScreen(
                         viewModel = viewModel,
                         onEditCard = { cardId ->
                             navController.navigate(NavRoute.CreateCard(cardId))
-                        }
+                        },
+                        backdrop = backgroundBackdrop
                     )
                 }
             }
@@ -199,93 +235,34 @@ fun MainScreen(
 }
 
 @Composable
-fun GlassyBottomNav(
+fun AdaptiveNavBar(
     currentDestination: androidx.navigation.NavDestination?,
+    backdrop: com.kyant.backdrop.Backdrop,
     onNavigate: (NavRoute) -> Unit,
     onAddClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 0.dp, end = 32.dp, bottom = 20.dp, start = 32.dp)
-            .height(68.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(RoundedCornerShape(28.dp))
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                        )
-                    )
-                )
-                .blur(4.dp)
+    LiquidGlassNavBar(backdrop = backdrop) {
+        GlassNavItem(
+            icon = Icons.Default.Home,
+            label = "Home",
+            selected = currentDestination?.hierarchy?.any { it.hasRoute<NavRoute.Home>() } == true,
+            onClick = { onNavigate(NavRoute.Home) },
+            backdrop = backdrop
         )
 
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            GlassNavItem(
-                icon = Icons.Default.Home,
-                label = "Home",
-                selected = currentDestination?.hierarchy?.any { it.hasRoute<NavRoute.Home>() } == true,
-                onClick = { onNavigate(NavRoute.Home) }
-            )
+        GlassFab(
+            onClick = onAddClick,
+            backdrop = backdrop,
+            size = 54.dp,
+            iconSize = 28.dp
+        )
 
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .border(
-                        BorderStroke(
-                            1.dp,
-                            MaterialTheme.colorScheme.outline.copy(alpha = 0.8f)
-                        ), CircleShape
-                    )
-                    .shadow(1.dp)
-
-
-                    .clickable { onAddClick() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-            GlassNavItem(
-                icon = Icons.Default.AccountCircle,
-                label = "Account",
-                selected = currentDestination?.hierarchy?.any { it.hasRoute<NavRoute.Account>() } == true,
-                onClick = { onNavigate(NavRoute.Account) }
-            )
-        }
-    }
-}
-
-@Composable
-fun GlassNavItem(
-    icon: ImageVector,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    IconButton(onClick = onClick) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface.copy(
-                    alpha = 0.4f
-                )
-            )
-        }
+        GlassNavItem(
+            icon = Icons.Default.AccountCircle,
+            label = "Account",
+            selected = currentDestination?.hierarchy?.any { it.hasRoute<NavRoute.Account>() } == true,
+            onClick = { onNavigate(NavRoute.Account) },
+            backdrop = backdrop
+        )
     }
 }

@@ -268,15 +268,11 @@ fun CardFace(
                     .matchParentSize()
                     .clip(shape = RoundedCornerShape(size = 20.dp))
                     .padding(24.dp),
-                contentAlignment = Alignment.BottomCenter
+                contentAlignment = Alignment.BottomStart
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
-                        .padding(horizontal = 30.dp, vertical = 15.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier.padding(bottom = 10.dp, start = 10.dp),
+                    horizontalAlignment = Alignment.Start
                 ) {
                     Text(
                         text = "CVC",

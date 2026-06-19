@@ -1,5 +1,8 @@
 package com.mrapps.mycard.ui.screens.creditcard
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,37 +11,28 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +41,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.kyant.backdrop.Backdrop
+import com.mrapps.mycard.ui.components.GlassButton
+import com.mrapps.mycard.ui.components.GlassSlider
+import com.mrapps.mycard.ui.components.GlassSwitch
 import com.mrapps.mycard.ui.theme.White800
 import org.koin.compose.viewmodel.koinViewModel
 import java.util.Calendar
@@ -56,7 +54,8 @@ import java.util.Calendar
 fun CreateCardScreen(
     onNavigateBack: () -> Unit,
     viewModel: CardViewModel = koinViewModel(),
-    cardId: Int? = null
+    cardId: Int? = null,
+    backdrop: Backdrop? = null
 ) {
     val cards by viewModel.cards.collectAsState(initial = emptyList())
 
@@ -102,14 +101,14 @@ fun CreateCardScreen(
     }
 
     val textFieldColors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = Color.White,
-        unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
+        focusedBorderColor = Color.White.copy(alpha = 0.4f),
+        unfocusedBorderColor = Color.White.copy(alpha = 0.08f),
         focusedLabelColor = Color.White,
-        unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
+        unfocusedLabelColor = Color.White.copy(alpha = 0.4f),
         focusedTextColor = Color.White,
-        unfocusedTextColor = Color.White,
+        unfocusedTextColor = Color.White.copy(alpha = 0.9f),
         cursorColor = Color.White,
-        errorBorderColor = MaterialTheme.colorScheme.error,
+        errorBorderColor = MaterialTheme.colorScheme.error.copy(alpha = 0.5f),
         errorLabelColor = MaterialTheme.colorScheme.error,
         errorSupportingTextColor = MaterialTheme.colorScheme.error
     )
@@ -144,16 +143,17 @@ fun CreateCardScreen(
         OutlinedTextField(
             value = cardProvider,
             onValueChange = { cardProvider = it },
-            label = { Text("Card Provider (e.g. Visa, Bank)") },
+            label = { Text("Card Provider") },
             modifier = Modifier.fillMaxWidth(),
-            colors = textFieldColors
+            colors = textFieldColors,
+            shape = RoundedCornerShape(18.dp)
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
             value = cardNumber,
-            onValueChange = {
+            onValueChange = { 
                 if (it.length <= 19) {
                     cardNumber = it
                     cardNumberError = false
@@ -164,9 +164,8 @@ fun CreateCardScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             colors = textFieldColors,
             isError = cardNumberError,
-            supportingText = if (cardNumberError) {
-                { Text("Required") }
-            } else null
+            supportingText = if (cardNumberError) { { Text("Required") } } else null,
+            shape = RoundedCornerShape(18.dp)
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -181,21 +180,20 @@ fun CreateCardScreen(
                     readOnly = true,
                     colors = textFieldColors,
                     isError = expireDateError,
-                    supportingText = if (expireDateError) {
-                        { Text("Required") }
-                    } else null
+                    supportingText = if (expireDateError) { { Text("Required") } } else null,
+                    shape = RoundedCornerShape(18.dp)
                 )
                 Box(
                     modifier = Modifier
                         .matchParentSize()
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(RoundedCornerShape(18.dp))
                         .clickable { showDatePicker = true }
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
             OutlinedTextField(
                 value = cvc,
-                onValueChange = {
+                onValueChange = { 
                     if (it.length <= 3) {
                         cvc = it
                         cvcError = false
@@ -206,9 +204,8 @@ fun CreateCardScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 colors = textFieldColors,
                 isError = cvcError,
-                supportingText = if (cvcError) {
-                    { Text("Required") }
-                } else null
+                supportingText = if (cvcError) { { Text("Required") } } else null,
+                shape = RoundedCornerShape(18.dp)
             )
         }
 
@@ -216,7 +213,7 @@ fun CreateCardScreen(
 
         OutlinedTextField(
             value = cardOwnerName,
-            onValueChange = {
+            onValueChange = { 
                 cardOwnerName = it
                 cardOwnerNameError = false
             },
@@ -224,123 +221,76 @@ fun CreateCardScreen(
             modifier = Modifier.fillMaxWidth(),
             colors = textFieldColors,
             isError = cardOwnerNameError,
-            supportingText = if (cardOwnerNameError) {
-                { Text("Required") }
-            } else null
+            supportingText = if (cardOwnerNameError) { { Text("Required") } } else null,
+            shape = RoundedCornerShape(18.dp)
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Color Picker
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                "Card Theme Color",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+            HuePicker(
+                selectedColor = selectedColor,
+                onColorSelected = { selectedColor = it },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Glass Toggle for Chromatic Mode
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                "Choose Card Color",
-                color = Color.White,
-                fontWeight = FontWeight.Bold
+            Text("Chromatic Mode", color = Color.White, fontWeight = FontWeight.Bold)
+            
+            GlassSwitch(
+                checked = isChromatic,
+                onCheckedChange = { isChromatic = it },
+                backdrop = backdrop
             )
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Chromatic", color = Color.White, fontSize = 14.sp)
-                Spacer(modifier = Modifier.width(8.dp))
-                Switch(
-                    checked = isChromatic,
-                    onCheckedChange = { isChromatic = it },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = MaterialTheme.colorScheme.primary,
-                        checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
-                    )
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        if (!isChromatic) {
-            HuePicker(
-                selectedColor = selectedColor,
-                onColorSelected = { selectedColor = it },
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(brush = Brush.linearGradient(chromaticColors))
-                    .border(1.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(20.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    "Chromatic Mode Active",
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Glassy Gradient Save Button
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .padding(horizontal = 40.dp)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                        )
-                    )
-                )
-                .border(
-                    1.dp,
-                    Color.White.copy(alpha = 0.2f),
-                    RoundedCornerShape(12.dp)
-                )
-                .clickable {
-                    cardNumberError = cardNumber.isEmpty()
-                    expireDateError = expireDate.isEmpty()
-                    cvcError = cvc.isEmpty()
-                    cardOwnerNameError = cardOwnerName.isEmpty()
+        // Glass Button
+        GlassButton(
+            onClick = {
+                cardNumberError = cardNumber.isEmpty()
+                expireDateError = expireDate.isEmpty()
+                cvcError = cvc.isEmpty()
+                cardOwnerNameError = cardOwnerName.isEmpty()
 
-                    if (cardNumberError || expireDateError || cvcError || cardOwnerNameError) {
-                        return@clickable
-                    }
+                if (cardNumberError || expireDateError || cvcError || cardOwnerNameError) {
+                    return@GlassButton
+                }
 
-                    val card = CardData(
-                        id = cardId ?: 0,
-                        cardNumber = cardNumber,
-                        cardProvider = cardProvider,
-                        cardOwnerName = cardOwnerName,
-                        expireDate = expireDate,
-                        cvc = cvc,
-                        accentColor = selectedColor,
-                        isChromatic = isChromatic,
-                        title = cardProvider.ifEmpty { "My Card" }
-                    )
-                    if (cardId == null) {
-                        viewModel.addCard(card)
-                    } else {
-                        viewModel.updateCard(card)
-                    }
-                    onNavigateBack()
-                },
-            contentAlignment = Alignment.Center
+                val card = CardData(
+                    id = cardId ?: 0,
+                    cardNumber = cardNumber,
+                    cardProvider = cardProvider,
+                    cardOwnerName = cardOwnerName,
+                    expireDate = expireDate,
+                    cvc = cvc,
+                    accentColor = selectedColor,
+                    isChromatic = isChromatic,
+                    title = cardProvider.ifEmpty { "My Card" }
+                )
+                if (cardId == null) viewModel.addCard(card) else viewModel.updateCard(card)
+                onNavigateBack()
+            },
+            modifier = Modifier.fillMaxWidth(),
+            backdrop = backdrop
         ) {
-            Text(
-                "Save Card",
-                color = Color.White,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium
-            )
+            Text("Save Card", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
         Spacer(modifier = Modifier.height(40.dp))
     }
@@ -355,42 +305,31 @@ fun MonthYearPickerDialog(
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
     val years = (currentYear..currentYear + 20).map { it.toString().takeLast(2) }
 
-    var selectedMonth by remember {
-        mutableStateOf(
-            months[Calendar.getInstance().get(Calendar.MONTH)]
-        )
-    }
+    var selectedMonth by remember { mutableStateOf(months[Calendar.getInstance().get(Calendar.MONTH)]) }
     var selectedYear by remember { mutableStateOf(years[0]) }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape = RoundedCornerShape(18.dp),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 8.dp
+            shape = RoundedCornerShape(32.dp),
+            color = Color(0xFF141414).copy(alpha = 0.98f),
+            tonalElevation = 0.dp
         ) {
             Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
+                modifier = Modifier.padding(24.dp).fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Select Expiry Date",
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    color = Color.White,
+                    modifier = Modifier.padding(bottom = 20.dp)
                 )
 
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
+                    modifier = Modifier.fillMaxWidth().height(200.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    // Month Selection
-                    LazyColumn(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                    LazyColumn(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                         items(months) { month ->
                             val isSelected = selectedMonth == month
                             Text(
@@ -398,27 +337,16 @@ fun MonthYearPickerDialog(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable { selectedMonth = month }
-                                    .padding(vertical = 8.dp)
-                                    .background(
-                                        if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                                        else Color.Transparent,
-                                        RoundedCornerShape(8.dp)
-                                    ),
+                                    .padding(vertical = 10.dp)
+                                    .background(if (isSelected) Color.White.copy(alpha = 0.08f) else Color.Transparent, CircleShape),
                                 textAlign = TextAlign.Center,
-                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                color = if (isSelected) Color.White else Color.White.copy(alpha = 0.35f),
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = 18.sp
                             )
                         }
                     }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    // Year Selection
-                    LazyColumn(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                    LazyColumn(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                         items(years) { year ->
                             val isSelected = selectedYear == year
                             Text(
@@ -426,16 +354,10 @@ fun MonthYearPickerDialog(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable { selectedYear = year }
-                                    .padding(vertical = 8.dp)
-                                    .background(
-                                        if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(
-                                            0.8f
-                                        )
-                                        else Color.Transparent,
-                                        RoundedCornerShape(8.dp)
-                                    ),
+                                    .padding(vertical = 10.dp)
+                                    .background(if (isSelected) Color.White.copy(alpha = 0.08f) else Color.Transparent, CircleShape),
                                 textAlign = TextAlign.Center,
-                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                color = if (isSelected) Color.White else Color.White.copy(alpha = 0.4f),
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = 18.sp
                             )
@@ -443,21 +365,20 @@ fun MonthYearPickerDialog(
                     }
                 }
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text(
-                            text = "Cancel",
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = { onDateSelected(selectedMonth, selectedYear) }) {
-                        Text("OK")
+                Row(modifier = Modifier.fillMaxWidth().padding(top = 24.dp), horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = onDismiss) { Text("Cancel", color = Color.White.copy(alpha = 0.35f)) }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Box(
+                        modifier = Modifier
+                            .height(44.dp)
+                            .padding(horizontal = 24.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.15f))
+                            .border(0.5.dp, Color.White.copy(alpha = 0.3f), CircleShape)
+                            .clickable { onDateSelected(selectedMonth, selectedYear) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("OK", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             }
