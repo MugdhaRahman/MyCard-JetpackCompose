@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 // Futuristic Deep Purple Palette
 val PrimaryPurple = Color(0xFF1B0040)
 val OnPrimaryPurple = Color(0xFFFFFFFF)
-val PrimaryPurpleContainer = Color(0xFF320070)
+val PrimaryPurpleContainer = Color(0xFF7424F2)
 val OnPrimaryPurpleContainer = Color(0xFFE8D6FF)
 
 val SecondaryTeal = Color(0xFF00E5FF)
@@ -17,7 +17,7 @@ val TertiaryMagenta = Color(0xFFFF4081)
 val OnTertiaryMagenta = Color(0xFFFFFFFF)
 
 // Deep Space Backgrounds
-val DeepSpaceBackground = Color(0xFF08070F)
+val DeepSpaceBackground = Color(0xFF100026)
 val DeepSpaceSurface = Color(0xFF0E0C1A)
 val DeepSpaceSurfaceVariant = Color(0xFF1B1830)
 
@@ -58,7 +58,7 @@ val AndroidGreen = Color(0xFF42DC8C)
 val Blue200 = Color(0xD94CDBFF)
 val OrangeAccent = Color(0xFFFC7808)
 val OrangeMid = Color(0xFFFB5C04)
-val Magenta100 = Color(0xFFFF00FF)
+val Magenta100 = Color(0xFF7424F2)
 val Cyan100 = Color(0xFF00FFFF)
 val Yellow100 = Color(0xFFFFFF00)
 val Pink100 = Color(0xFFFF6B9D)

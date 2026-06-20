@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
@@ -33,7 +34,6 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.effects.blur
-import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.effects.vibrancy
 import kotlinx.coroutines.launch
 
@@ -57,7 +57,6 @@ fun LiquidGlassNavBar(
                 effects = {
                     vibrancy()
                     blur(with(density) { 20.dp.toPx() })
-                    lens(8f, 0.05f)
                 }
             )
         } else {
@@ -74,10 +73,8 @@ fun LiquidGlassNavBar(
                     width = 1.2.dp,
                     brush = Brush.sweepGradient(
                         listOf(
-                            Color.Cyan.copy(alpha = 0.2f),
-                            Color.White.copy(alpha = 0.6f),
-                            Color.Magenta.copy(alpha = 0.2f),
-                            Color.White.copy(alpha = 0.6f)
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                            Color.White.copy(alpha = 0.3f)
                         )
                     ),
                     shape = RoundedCornerShape(32.dp)
@@ -114,7 +111,6 @@ fun GlassFab(
             effects = {
                 vibrancy()
                 blur(with(density) { 15.dp.toPx() })
-                lens(10f, 0.1f)
             },
             layerBlock = {
                 val progress = progressAnimation.value
@@ -132,15 +128,13 @@ fun GlassFab(
             .size(size)
             .clip(CircleShape)
             .then(glassModifier)
-            .background(Color.White.copy(alpha = 0.1f))
+            .background(Color.Transparent)
             .border(
-                width = 1.5.dp,
+                width = 0.5.dp,
                 brush = Brush.sweepGradient(
                     listOf(
-                        Color.Cyan.copy(alpha = 0.4f),
-                        Color.White.copy(alpha = 0.8f),
-                        Color.Magenta.copy(alpha = 0.4f),
-                        Color.White.copy(alpha = 0.8f)
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                        Color.White.copy(alpha = 0.3f)
                     )
                 ),
                 shape = CircleShape
@@ -188,7 +182,6 @@ fun GlassButton(
             effects = {
                 vibrancy()
                 blur(with(density) { 12.dp.toPx() })
-                lens(6f, 0.05f)
             },
             layerBlock = {
                 val progress = progressAnimation.value
@@ -206,14 +199,12 @@ fun GlassButton(
             .height(56.dp)
             .clip(CircleShape)
             .then(glassModifier)
-            .background(Color.White.copy(alpha = 0.1f))
+            .background(Color.Transparent)
             .border(
-                width = 1.5.dp,
+                width = 1.dp,
                 brush = Brush.sweepGradient(
                     listOf(
-                        Color.Cyan.copy(alpha = 0.3f),
-                        Color.White.copy(alpha = 0.7f),
-                        Color.Magenta.copy(alpha = 0.3f),
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
                         Color.White.copy(alpha = 0.7f)
                     )
                 ),
@@ -295,7 +286,7 @@ fun GlassNavItem(
             Icon(
                 imageVector = icon,
                 contentDescription = label,
-                tint = if (selected) MaterialTheme.colorScheme.primary else Color.White.copy(
+                tint = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.White.copy(
                     alpha = 0.5f
                 )
             )
@@ -357,14 +348,14 @@ fun GlassSlider(
                     shape = { CircleShape },
                     effects = {
                         vibrancy()
-                        lens(8f, 0.05f)
+                        blur(with(density) { 4.dp.toPx() })
                     }
                 )
                 .background(Color.White.copy(alpha = 0.1f), CircleShape)
                 .border(1.2.dp, Color.White.copy(alpha = 0.5f), CircleShape)
                 .pointerInput(maxOffset) {
                     awaitEachGesture {
-                        val down = awaitFirstDown()
+                        awaitFirstDown()
                         var currentPos = (value * maxOffset.toPx())
                         while (true) {
                             val event = awaitPointerEvent()
@@ -392,7 +383,7 @@ fun GlassSwitch(
 ) {
     val density = LocalDensity.current
     val thumbOffset by animateDpAsState(targetValue = if (checked) 28.dp else 0.dp)
-    
+
     Box(
         modifier = modifier
             .width(60.dp)
@@ -409,13 +400,17 @@ fun GlassSwitch(
                 .fillMaxWidth()
                 .height(10.dp)
                 .clip(CircleShape)
-                .background(if (checked) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f) else Color.White.copy(alpha = 0.1f))
+                .background(
+                    if (checked) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f) else Color.White.copy(
+                        alpha = 0.1f
+                    )
+                )
         )
-        
+
         // Thumb (Lens)
         Box(
             modifier = Modifier
-                .offset(x = thumbOffset)
+                .offset { IntOffset(thumbOffset.roundToPx(), 0) }
                 .size(32.dp)
                 .clip(CircleShape)
                 .run {
@@ -425,11 +420,13 @@ fun GlassSwitch(
                             shape = { CircleShape },
                             effects = {
                                 vibrancy()
-                                lens(12f, 0.15f, chromaticAberration = true)
+                                blur(with(density) { 4.dp.toPx() })
                             }
                         )
                     } else {
-                        this.background(Color.White.copy(alpha = 0.15f)).blur(1.dp)
+                        this
+                            .background(Color.White.copy(alpha = 0.15f))
+                            .blur(1.dp)
                     }
                 }
                 .background(Color.White.copy(alpha = 0.1f))

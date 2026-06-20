@@ -55,12 +55,24 @@ fun LiquidGlassContainer(
             modifier = Modifier
                 .fillMaxSize()
                 .blur(blurRadius)
+
+
         )
         
         // Content
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = Modifier.fillMaxSize()
+                .border(
+                    width = 0.5.dp,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                            Color.White.copy(alpha = 0.3f)
+                        )
+                    ),
+                    shape = shape
+                ),
+            contentAlignment = Alignment.Center,
         ) {
             content()
         }

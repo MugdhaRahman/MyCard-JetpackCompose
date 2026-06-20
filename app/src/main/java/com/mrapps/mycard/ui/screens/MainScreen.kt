@@ -100,9 +100,8 @@ fun MainScreen(
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            currentAccentColor.copy(alpha = 0.4f),
-                            Black700,
-                            Black900,
+                            Black700.copy(alpha = 0.4f),
+                            MaterialTheme.colorScheme.background.copy(alpha = 1f),
                         ),
                         center = Offset.Zero,
                         radius = 2400f

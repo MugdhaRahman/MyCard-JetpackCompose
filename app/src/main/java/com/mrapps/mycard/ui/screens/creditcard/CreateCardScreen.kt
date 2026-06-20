@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,6 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -41,10 +44,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.*
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.effects.vibrancy
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.effects.vibrancy
 import com.mrapps.mycard.ui.components.GlassButton
 import com.mrapps.mycard.ui.components.GlassSlider
 import com.mrapps.mycard.ui.components.GlassSwitch
+import com.mrapps.mycard.ui.theme.LiquidGlassContainer
 import com.mrapps.mycard.ui.theme.White800
 import org.koin.compose.viewmodel.koinViewModel
 import java.util.Calendar
@@ -96,7 +106,8 @@ fun CreateCardScreen(
                 expireDate = "$month/$year"
                 expireDateError = false
                 showDatePicker = false
-            }
+            },
+            backdrop = backdrop
         )
     }
 
@@ -299,20 +310,47 @@ fun CreateCardScreen(
 @Composable
 fun MonthYearPickerDialog(
     onDismiss: () -> Unit,
-    onDateSelected: (String, String) -> Unit
+    onDateSelected: (String, String) -> Unit,
+    backdrop: Backdrop? = null
 ) {
     val months = (1..12).map { it.toString().padStart(2, '0') }
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
     val years = (currentYear..currentYear + 20).map { it.toString().takeLast(2) }
+    val density = LocalDensity.current
 
     var selectedMonth by remember { mutableStateOf(months[Calendar.getInstance().get(Calendar.MONTH)]) }
     var selectedYear by remember { mutableStateOf(years[0]) }
 
     Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(32.dp),
-            color = Color(0xFF141414).copy(alpha = 0.98f),
-            tonalElevation = 0.dp
+        val glassModifier = if (backdrop != null) {
+            Modifier.drawBackdrop(
+                backdrop = backdrop,
+                shape = { RoundedCornerShape(32.dp) },
+                effects = {
+                    vibrancy()
+                    blur(with(density) { 40.dp.toPx() })
+                    lens(12f, 0.4f, depthEffect = true, chromaticAberration = true)
+                }
+            )
+        } else {
+            Modifier.background(Color.White.copy(alpha = 0.08f)).blur(1.dp)
+        }
+
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(32.dp))
+                .then(glassModifier)
+                .background(Color.White.copy(alpha = 0.05f))
+                .border(
+                    width = 0.5.dp,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.3f),
+                            Color.White.copy(alpha = 0.05f)
+                        )
+                    ),
+                    shape = RoundedCornerShape(32.dp)
+                )
         ) {
             Column(
                 modifier = Modifier.padding(24.dp).fillMaxWidth(),
@@ -320,61 +358,135 @@ fun MonthYearPickerDialog(
             ) {
                 Text(
                     text = "Select Expiry Date",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     color = Color.White,
                     modifier = Modifier.padding(bottom = 20.dp)
                 )
 
                 Row(
-                    modifier = Modifier.fillMaxWidth().height(200.dp),
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 200.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
+                    val itemLensModifier = if (backdrop != null) {
+                        Modifier.drawBackdrop(
+                            backdrop = backdrop,
+                            shape = { CircleShape },
+                            effects = {
+                                blur(with(density) { 8.dp.toPx() })
+                                lens(6f, 0.2f, depthEffect = true, chromaticAberration = true)
+                            }
+                        )
+                    } else {
+                        Modifier.background(Color.White.copy(alpha = 0.1f)).blur(1.dp)
+                    }
+
                     LazyColumn(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                         items(months) { month ->
                             val isSelected = selectedMonth == month
-                            Text(
-                                text = month,
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { selectedMonth = month }
-                                    .padding(vertical = 10.dp)
-                                    .background(if (isSelected) Color.White.copy(alpha = 0.08f) else Color.Transparent, CircleShape),
-                                textAlign = TextAlign.Center,
-                                color = if (isSelected) Color.White else Color.White.copy(alpha = 0.35f),
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                fontSize = 18.sp
-                            )
+                                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                                    .clip(CircleShape)
+                                    .then(
+                                        if (isSelected) itemLensModifier
+                                            .background(Color.Transparent)
+                                            .border(
+                                                0.5.dp,
+                                                Brush.sweepGradient(
+                                                    listOf(
+                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                                                        Color.White.copy(alpha = 0.3f)
+                                                    )
+                                                ),
+                                                CircleShape
+                                            )
+                                        else Modifier
+                                    )
+                                    .clickable { selectedMonth = month },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = month,
+                                    modifier = Modifier.padding(vertical = 8.dp),
+                                    textAlign = TextAlign.Center,
+                                    color = if (isSelected) Color.White else Color.White.copy(alpha = 0.35f),
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    fontSize = 16.sp
+                                )
+                            }
                         }
                     }
                     LazyColumn(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                         items(years) { year ->
                             val isSelected = selectedYear == year
-                            Text(
-                                text = "20$year",
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { selectedYear = year }
-                                    .padding(vertical = 10.dp)
-                                    .background(if (isSelected) Color.White.copy(alpha = 0.08f) else Color.Transparent, CircleShape),
-                                textAlign = TextAlign.Center,
-                                color = if (isSelected) Color.White else Color.White.copy(alpha = 0.4f),
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                fontSize = 18.sp
-                            )
+                                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                                    .clip(CircleShape)
+                                    .then(
+                                        if (isSelected) itemLensModifier
+                                            .background(Color.Transparent)
+                                            .border(
+                                                0.5.dp,
+                                                Brush.sweepGradient(
+                                                    listOf(
+                                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                                                        Color.White.copy(alpha = 0.3f),
+                                                    )
+                                                ),
+                                                CircleShape
+                                            )
+                                        else Modifier
+                                    )
+                                    .clickable { selectedYear = year },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "20$year",
+                                    modifier = Modifier.padding(vertical = 8.dp),
+                                    textAlign = TextAlign.Center,
+                                    color = if (isSelected) Color.White else Color.White.copy(alpha = 0.4f),
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    fontSize = 16.sp
+                                )
+                            }
                         }
                     }
                 }
 
-                Row(modifier = Modifier.fillMaxWidth().padding(top = 24.dp), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = onDismiss) { Text("Cancel", color = Color.White.copy(alpha = 0.35f)) }
-                    Spacer(modifier = Modifier.width(12.dp))
+                Row(modifier = Modifier.fillMaxWidth().padding(top = 24.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+                    TextButton(onClick = onDismiss) { Text("Cancel", color = MaterialTheme.colorScheme.error) }
+                    val okGlassModifier = if (backdrop != null) {
+                        Modifier.drawBackdrop(
+                            backdrop = backdrop,
+                            shape = { CircleShape },
+                            effects = {
+                                blur(with(density) { 12.dp.toPx() })
+                                lens(8f, 0.24f, depthEffect = true, chromaticAberration = true)
+                            }
+                        )
+                    } else {
+                        Modifier.background(Color.White.copy(alpha = 0.1f)).blur(1.dp)
+                    }
+
                     Box(
                         modifier = Modifier
-                            .height(44.dp)
-                            .padding(horizontal = 24.dp)
+                            .size(44.dp)
                             .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.15f))
-                            .border(0.5.dp, Color.White.copy(alpha = 0.3f), CircleShape)
+                            .then(okGlassModifier)
+                            .background(Color.White.copy(alpha = 0.08f))
+                            .border(
+                                0.5.dp,
+                                Brush.sweepGradient(
+                                    listOf(
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                                        Color.White.copy(alpha = 0.3f),
+                                    )
+                                ),
+                                CircleShape
+                            )
                             .clickable { onDateSelected(selectedMonth, selectedYear) },
                         contentAlignment = Alignment.Center
                     ) {

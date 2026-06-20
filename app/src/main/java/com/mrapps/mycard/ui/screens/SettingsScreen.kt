@@ -2,9 +2,11 @@ package com.mrapps.mycard.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -110,9 +112,9 @@ fun CardItem(
                 width = 1.dp,
                 brush = Brush.linearGradient(
                     listOf(
-                        Color.White.copy(alpha = 0.15f),
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
                         Color.Transparent,
-                        Color.White.copy(alpha = 0.05f)
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
                     )
                 ),
                 shape = RoundedCornerShape(24.dp)
@@ -141,25 +143,70 @@ fun CardItem(
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    onClick = onEdit,
-                    modifier = Modifier.size(40.dp)
+                val actionGlassModifier = if (backdrop != null) {
+                    Modifier.drawBackdrop(
+                        backdrop = backdrop,
+                        shape = { RoundedCornerShape(14.dp) },
+                        effects = {
+                            vibrancy()
+                            blur(with(density) { 10.dp.toPx() })
+                        }
+                    )
+                } else {
+                    Modifier.background(Color.White.copy(alpha = 0.08f)).blur(1.dp)
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .then(actionGlassModifier)
+                        .background(Color.Transparent)
+                        .border(
+                            0.5.dp,
+                            Brush.sweepGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                                    Color.White.copy(alpha = 0.3f)
+                                )
+                            ),
+                            shape = CircleShape
+                        )
+                        .clickable(onClick = onEdit),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Edit,
                         contentDescription = "Edit Card",
-                        tint = Color.White.copy(alpha = 0.8f)
+                        tint = Color.White.copy(alpha = 0.8f),
+                        modifier = Modifier.size(22.dp)
                     )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
-                IconButton(
-                    onClick = onDelete,
-                    modifier = Modifier.size(40.dp)
+                Spacer(modifier = Modifier.width(12.dp))
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .then(actionGlassModifier)
+                        .background(Color.White.copy(alpha = 0.05f))
+                        .border(
+                            0.5.dp,
+                            Brush.sweepGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                                    Color.White.copy(alpha = 0.3f)
+                                )
+                            ),
+                            RoundedCornerShape(14.dp)
+                        )
+                        .clickable(onClick = onDelete),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Delete,
                         contentDescription = "Delete Card",
-                        tint = Color.Red.copy(alpha = 0.5f)
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
