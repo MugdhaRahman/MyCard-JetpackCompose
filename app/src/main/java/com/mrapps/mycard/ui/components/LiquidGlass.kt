@@ -1,6 +1,7 @@
 package com.mrapps.mycard.ui.components
-
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,13 +9,31 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -27,12 +46,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
-import com.kyant.backdrop.*
+import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.vibrancy
 import kotlinx.coroutines.launch
@@ -60,7 +79,9 @@ fun LiquidGlassNavBar(
                 }
             )
         } else {
-            Modifier.background(Color.White.copy(alpha = 0.1f)).blur(1.dp)
+            Modifier
+                .background(Color.White.copy(alpha = 0.1f))
+                .blur(1.dp)
         }
 
         Box(
@@ -120,9 +141,10 @@ fun GlassFab(
             }
         )
     } else {
-        Modifier.background(Color.White.copy(alpha = 0.12f)).blur(1.dp)
+        Modifier
+            .background(Color.White.copy(alpha = 0.12f))
+            .blur(1.dp)
     }
-
     Box(
         modifier = modifier
             .size(size)
@@ -158,8 +180,9 @@ fun GlassFab(
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
-            tint = Color.White,
+            tint = Color.White.copy(alpha = 0.8f),
             modifier = Modifier.size(iconSize)
+
         )
     }
 }
@@ -191,9 +214,10 @@ fun GlassButton(
             }
         )
     } else {
-        Modifier.background(Color.White.copy(alpha = 0.1f)).blur(1.dp)
+        Modifier
+            .background(Color.White.copy(alpha = 0.1f))
+            .blur(1.dp)
     }
-
     Box(
         modifier = modifier
             .height(56.dp)

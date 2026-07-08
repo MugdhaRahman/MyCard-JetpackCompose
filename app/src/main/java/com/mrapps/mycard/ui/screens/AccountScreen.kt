@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
@@ -46,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -57,6 +57,7 @@ import com.mrapps.mycard.ui.screens.account.AccountData
 import com.mrapps.mycard.ui.screens.account.AccountType
 import com.mrapps.mycard.ui.screens.account.AccountViewModel
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.math.absoluteValue
 
 @Composable
 fun AccountScreen(
@@ -128,11 +129,10 @@ fun AccountItem(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = if (account.type == AccountType.BANK) Icons.Default.AccountBalance else Icons.Default.AccountBalanceWallet,
-                contentDescription = null,
-                tint = Color.White.copy(alpha = 0.9f),
-                modifier = Modifier.size(36.dp)
+            ProviderLogo(
+                name = account.providerName,
+                size = 36.dp,
+                fontSize = 16.sp
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -156,6 +156,49 @@ fun AccountItem(
                 )
             }
         }
+    }
+}
+
+private val logoColors = listOf(
+    Color(0xFF7424F2),
+    Color(0xFF00E5FF),
+    Color(0xFFFF4081),
+    Color(0xFF42DC8C),
+    Color(0xFFFF6B9D),
+    Color(0xFFFC7808),
+    Color(0xFFB2FF59),
+    Color(0xFF4CDBFF),
+    Color(0xFFFFEB3B),
+    Color(0xFFE040FB),
+)
+
+private fun colorForName(name: String): Color {
+    val index = name.hashCode().ushr(1).absoluteValue % logoColors.size
+    return logoColors[index]
+}
+
+@Composable
+fun ProviderLogo(
+    name: String,
+    size: Dp = 36.dp,
+    fontSize: androidx.compose.ui.unit.TextUnit = 16.sp
+) {
+    val letter = name.firstOrNull()?.uppercase() ?: "?"
+    val bgColor = colorForName(name)
+
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(bgColor.copy(alpha = 0.85f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = letter,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            fontSize = fontSize
+        )
     }
 }
 

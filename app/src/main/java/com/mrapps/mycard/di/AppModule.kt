@@ -13,10 +13,10 @@ import org.koin.dsl.module
 val appModule = module {
     single {
         Room.databaseBuilder(
-            androidContext(),
-            AppDatabase::class.java,
-            "mycard_database"
-        ).fallbackToDestructiveMigration()
+                androidContext(),
+                AppDatabase::class.java,
+                "mycard_database"
+            ).fallbackToDestructiveMigration(false)
             .build()
     }
 

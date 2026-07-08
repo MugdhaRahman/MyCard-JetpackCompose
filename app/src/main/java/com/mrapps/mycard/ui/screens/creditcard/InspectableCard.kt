@@ -230,7 +230,7 @@ fun CopyButton(text: String, modifier: Modifier = Modifier) {
             imageVector = Icons.Default.ContentCopy,
             contentDescription = "Copy",
             modifier = Modifier.size(16.dp),
-            tint = Color.Black.copy(alpha = 0.6f)
+            tint = Color.White.copy(alpha = 0.6f)
         )
     }
 }
@@ -271,23 +271,21 @@ fun CardFace(
                 contentAlignment = Alignment.BottomStart
             ) {
                 Column(
-                    modifier = Modifier.padding(bottom = 10.dp, start = 10.dp),
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
                     Text(
                         text = "CVC",
-                        color = Color.Black,
+                        color = Color.White,
                         style = MaterialTheme.typography.labelMedium
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = cvc,
-                            color = Color.Black,
+                            color = Color.White,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         CopyButton(cvc)
-                    }
                 }
             }
         } else {
