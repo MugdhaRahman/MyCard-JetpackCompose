@@ -152,7 +152,7 @@ fun AccountItem(
                 Icon(
                     Icons.Default.Delete,
                     contentDescription = "Delete",
-                    tint = Color.Red.copy(alpha = 0.4f)
+                    tint = MaterialTheme.colorScheme.error
                 )
             }
         }
