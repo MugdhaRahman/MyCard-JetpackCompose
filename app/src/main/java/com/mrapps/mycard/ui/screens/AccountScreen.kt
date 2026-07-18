@@ -24,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -67,6 +68,7 @@ fun AccountScreen(
 ) {
     val accounts by viewModel.accounts.collectAsStateWithLifecycle()
     var showAddDialog by remember { mutableStateOf(false) }
+    var accountToEdit by remember { mutableStateOf<AccountData?>(null) }
 
     Box(modifier = modifier.fillMaxSize()) {
         if (accounts.isEmpty()) {
@@ -80,6 +82,7 @@ fun AccountScreen(
                 items(accounts) { account ->
                     AccountItem(
                         account = account,
+                        onEdit = { accountToEdit = account },
                         onDelete = { viewModel.deleteAccount(account.id) }
                     )
                 }
@@ -99,11 +102,23 @@ fun AccountScreen(
         )
 
         if (showAddDialog) {
-            AddAccountDialog(
+            AccountDialog(
                 onDismiss = { showAddDialog = false },
-                onAdd = { account ->
+                onSave = { account ->
                     viewModel.addAccount(account)
                     showAddDialog = false
+                },
+                backdrop = backdrop
+            )
+        }
+
+        accountToEdit?.let { account ->
+            AccountDialog(
+                account = account,
+                onDismiss = { accountToEdit = null },
+                onSave = { updatedAccount ->
+                    viewModel.addAccount(updatedAccount)
+                    accountToEdit = null
                 },
                 backdrop = backdrop
             )
@@ -113,6 +128,7 @@ fun AccountScreen(
 @Composable
 fun AccountItem(
     account: AccountData,
+    onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     Card(
@@ -146,6 +162,13 @@ fun AccountItem(
                     text = account.accountHolderName,
                     color = Color.White.copy(alpha = 0.55f),
                     fontSize = 14.sp
+                )
+            }
+            IconButton(onClick = onEdit) {
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    tint = Color.White.copy(alpha = 0.60f)
                 )
             }
             IconButton(onClick = onDelete) {
@@ -236,22 +259,23 @@ fun EmptyAccountScreen() {
 }
 
 @Composable
-fun AddAccountDialog(
+fun AccountDialog(
+    account: AccountData? = null,
     onDismiss: () -> Unit,
-    onAdd: (AccountData) -> Unit,
+    onSave: (AccountData) -> Unit,
     backdrop: Backdrop? = null
 ) {
-    var type by remember { mutableStateOf(AccountType.MOBILE_BANKING) }
-    var providerName by remember { mutableStateOf("") }
-    var accountHolderName by remember { mutableStateOf("") }
+    var type by remember { mutableStateOf(account?.type ?: AccountType.MOBILE_BANKING) }
+    var providerName by remember { mutableStateOf(account?.providerName ?: "") }
+    var accountHolderName by remember { mutableStateOf(account?.accountHolderName ?: "") }
 
-    var phoneNumberOrEmail by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
+    var phoneNumberOrEmail by remember { mutableStateOf(account?.phoneNumberOrEmail ?: "") }
+    var username by remember { mutableStateOf(account?.username ?: "") }
 
-    var accountNumber by remember { mutableStateOf("") }
-    var routingNumber by remember { mutableStateOf("") }
-    var branchName by remember { mutableStateOf("") }
-    var otherInfo by remember { mutableStateOf("") }
+    var accountNumber by remember { mutableStateOf(account?.accountNumber ?: "") }
+    var routingNumber by remember { mutableStateOf(account?.routingNumber ?: "") }
+    var branchName by remember { mutableStateOf(account?.branchName ?: "") }
+    var otherInfo by remember { mutableStateOf(account?.otherInfo ?: "") }
 
     var providerNameError by remember { mutableStateOf(false) }
     var accountHolderNameError by remember { mutableStateOf(false) }
@@ -279,7 +303,7 @@ fun AddAccountDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Add Account",
+                    text = if (account == null) "Add Account" else "Edit Account",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -397,8 +421,9 @@ fun AddAccountDialog(
                         if (accountHolderName.isEmpty()) accountHolderNameError = true
                         if (providerNameError || accountHolderNameError) return@GlassButton
 
-                        onAdd(
+                        onSave(
                             AccountData(
+                                id = account?.id ?: 0,
                                 type = type,
                                 providerName = providerName,
                                 accountHolderName = accountHolderName,
@@ -415,7 +440,7 @@ fun AddAccountDialog(
                     backdrop = backdrop
                 ) {
                     Text(
-                        "Add Account",
+                        if (account == null) "Add Account" else "Save Changes",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
