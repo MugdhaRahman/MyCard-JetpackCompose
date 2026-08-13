@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
@@ -44,6 +45,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -131,6 +134,7 @@ fun AccountItem(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val clipboard = LocalClipboardManager.current
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(22.dp),
@@ -158,11 +162,35 @@ fun AccountItem(
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
                 )
-                Text(
-                    text = account.accountHolderName,
-                    color = Color.White.copy(alpha = 0.55f),
-                    fontSize = 14.sp
-                )
+                val displayValue = if (account.type == AccountType.BANK) {
+                    account.accountNumber
+                } else {
+                    account.phoneNumberOrEmail
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    displayValue?.let { number ->
+                        Text(
+                            text = number,
+                            color = Color.White.copy(alpha = 0.55f),
+                            fontSize = 14.sp
+                        )
+                        IconButton(
+                            onClick = {
+                                clipboard.setText(AnnotatedString(number))
+                            },
+                            modifier = Modifier.size(20.dp)
+                                .padding(start = 4.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.ContentCopy,
+                                contentDescription = "Copy",
+                                tint = Color.White.copy(alpha = 0.55f),
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                    }
+                }
+            
             }
             IconButton(onClick = onEdit) {
                 Icon(
@@ -395,7 +423,7 @@ fun AccountDialog(
                     OutlinedTextField(
                         value = phoneNumberOrEmail,
                         onValueChange = { phoneNumberOrEmail = it },
-                        label = { Text("Phone or Email") },
+                        label = { Text("Phone Number") },
                         modifier = Modifier.fillMaxWidth(),
                         colors = textFieldColors,
                         shape = RoundedCornerShape(18.dp)

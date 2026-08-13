@@ -34,10 +34,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -76,6 +78,8 @@ fun CreateCardScreen(
     var cvc by remember { mutableStateOf("") }
     var selectedColor by remember { mutableStateOf(White800) }
     var isChromatic by remember { mutableStateOf(false) }
+    var hexInput by remember { mutableStateOf("") }
+    var hexFocused by remember { mutableStateOf(false) }
 
     var cardNumberError by remember { mutableStateOf(false) }
     var expireDateError by remember { mutableStateOf(false) }
@@ -96,6 +100,12 @@ fun CreateCardScreen(
                 selectedColor = card.accentColor
                 isChromatic = card.isChromatic
             }
+        }
+    }
+
+    LaunchedEffect(selectedColor, hexFocused) {
+        if (!hexFocused) {
+            hexInput = selectedColor.toHex()
         }
     }
 
@@ -250,6 +260,26 @@ fun CreateCardScreen(
                 selectedColor = selectedColor,
                 onColorSelected = { selectedColor = it },
                 modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedTextField(
+                value = hexInput,
+                onValueChange = { input ->
+                    hexInput = input
+                    parseHexColor(input)?.let { selectedColor = it }
+                },
+                label = { Text("Custom Color Code (Hex)") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { hexFocused = it.isFocused },
+                singleLine = true,
+                colors = textFieldColors,
+                supportingText = {
+                    if (parseHexColor(hexInput) == null && hexInput.isNotBlank()) {
+                        Text("Invalid hex code", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                shape = RoundedCornerShape(18.dp)
             )
         }
 
@@ -495,5 +525,19 @@ fun MonthYearPickerDialog(
                 }
             }
         }
+    }
+}
+
+private fun Color.toHex(): String {
+    return String.format("#%06X", this.toArgb() and 0xFFFFFF)
+}
+
+private fun parseHexColor(hex: String): Color? {
+    val cleaned = hex.trim().removePrefix("#")
+    if (cleaned.length != 6) return null
+    return try {
+        Color(android.graphics.Color.parseColor("#$cleaned"))
+    } catch (e: IllegalArgumentException) {
+        null
     }
 }

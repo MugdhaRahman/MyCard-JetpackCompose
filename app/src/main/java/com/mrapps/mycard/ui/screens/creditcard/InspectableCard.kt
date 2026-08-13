@@ -42,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
@@ -230,7 +231,7 @@ fun CopyButton(text: String, modifier: Modifier = Modifier) {
             imageVector = Icons.Default.ContentCopy,
             contentDescription = "Copy",
             modifier = Modifier.size(16.dp),
-            tint = Color.White.copy(alpha = 0.6f)
+            tint = Color.Black.copy(alpha = 0.4f)
         )
     }
 }
