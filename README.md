@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/Screenshot_20260819_015924.png" alt="MyCard" width="260">
+  <img src="docs/images/Screenshot_20260819_015905.png" alt="MyCard" width="260">
 </p>
 
 <h1 align="center">MyCard</h1>
