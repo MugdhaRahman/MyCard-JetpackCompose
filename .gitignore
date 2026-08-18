@@ -14,5 +14,5 @@
 .cxx
 local.properties
 
-# Signing key - never commit
-dist/*.keystore
+# Signing key + release artifacts - never commit
+dist/

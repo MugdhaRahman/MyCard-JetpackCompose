@@ -13,7 +13,7 @@
   <a href="https://github.com/MugdhaRahman/MyCard-JetpackCompose"><img src="https://img.shields.io/badge/platform-Android%20%7C%20Jetpack%20Compose-3DDC84?style=flat-square"></a>
   <a href="#"><img src="https://img.shields.io/badge/kotlin-2.x-purple?style=flat-square&logo=kotlin&logoColor=white"></a>
   <a href="#"><img src="https://img.shields.io/badge/offline--first-%E2%9C%93-green?style=flat-square"></a>
-  <a href="dist/MyCard-v1.0.apk"><img src="https://img.shields.io/badge/download-apk-blue?style=flat-square&logo=android"></a>
+  <a href="https://github.com/MugdhaRahman/MyCard-JetpackCompose/releases/latest"><img src="https://img.shields.io/badge/download-apk-blue?style=flat-square&logo=android"></a>
 </p>
 
 ---
@@ -51,10 +51,10 @@ card experience you'll actually enjoy opening.
 ## 📲 Download
 
 Grab the latest signed APK from the [Releases](https://github.com/MugdhaRahman/MyCard-JetpackCompose/releases)
-page, or install directly:
+page, or install directly via the release asset:
 
 ```
-📦 dist/MyCard-v1.0.apk
+https://github.com/MugdhaRahman/MyCard-JetpackCompose/releases/download/1.0.0/app-release.apk
 ```
 
 > **Note:** Android may ask you to allow installing apps from unknown sources if you're not
